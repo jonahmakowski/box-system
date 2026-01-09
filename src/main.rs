@@ -1,5 +1,6 @@
-use box_system::cli_mode;
+use box_system::webui;
 
-fn main() {
-    cli_mode::run();
+#[tokio::main]
+async fn main() {
+    webui::run().await;
 }
