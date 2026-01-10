@@ -18,4 +18,4 @@ jobs:
       - name: Run Formatter
         uses: https://git.jonahmakowski.ca/custom_actions/format-rust@main
         with:
-          repo: 'jonahmakowski/pyWrskp'
+          repo: 'jonahmakowski/box-system'
