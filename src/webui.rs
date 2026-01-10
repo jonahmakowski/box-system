@@ -1,7 +1,12 @@
-use axum::{Router, extract::{Path, State}, routing::get, response::Html};
-use tower_http::services::ServeDir;
-use crate::{database, DB_FILE, CODES_FOLDER};
+use crate::{CODES_FOLDER, DB_FILE, database};
 use askama::Template;
+use axum::{
+    Router,
+    extract::{Path, State},
+    response::Html,
+    routing::get,
+};
+use tower_http::services::ServeDir;
 
 pub async fn run() {
     let db_data = database::read_database(DB_FILE).expect("Something went wrong");
@@ -19,9 +24,7 @@ pub async fn run() {
 
     println!("Running Server on http://127.0.0.1:3000");
 
-    axum::serve(listener, app)
-        .await
-        .unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn greet(Path(name): Path<String>) -> String {
@@ -29,14 +32,12 @@ async fn greet(Path(name): Path<String>) -> String {
 }
 
 async fn main_page(State(db_data): State<Vec<database::BoxData>>) -> Html<String> {
-    let template = MainPage {
-        data: db_data
-    };
+    let template = MainPage { data: db_data };
     Html(template.render().unwrap())
 }
 
 #[derive(Template)]
 #[template(path = "list_boxes.html")]
 pub struct MainPage {
-    pub data: Vec<database::BoxData>
+    pub data: Vec<database::BoxData>,
 }
