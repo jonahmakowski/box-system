@@ -2,13 +2,13 @@ use crate::{CODES_FOLDER, DB_FILE, database};
 use askama::Template;
 use axum::{
     Router,
-    extract::{Path, State, Json},
+    extract::{Json, Path, State},
     http::StatusCode,
     response::Html,
     routing::{get, post},
 };
-use tower_http::services::ServeDir;
 use serde::Deserialize;
+use tower_http::services::ServeDir;
 
 pub async fn run() {
     let db_data = database::read_database(DB_FILE).expect("Something went wrong");
@@ -48,9 +48,11 @@ async fn camera_page() -> Html<String> {
 async fn submit_qr_code(Json(payload): Json<QRCodeData>) -> Result<String, (StatusCode, String)> {
     println!("Received QR code content: {}", payload.qr_content);
     // Process the QR code content (e.g., save to database, validate, etc.)
-    Ok(format!("Successfully received QR code: {}", payload.qr_content))
+    Ok(format!(
+        "Successfully received QR code: {}",
+        payload.qr_content
+    ))
 }
-
 
 #[derive(Template)]
 #[template(path = "list_boxes.html")]
