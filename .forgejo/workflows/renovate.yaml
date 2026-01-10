@@ -1,0 +1,17 @@
+name: Rust Formatter
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+    branches:
+      - main
+
+jobs:
+  rust_format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hit Renovate Webhook
+        run: curl -X POST https://n8n.jonahmakowski.ca/webhook/renovate
