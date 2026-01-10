@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Camera Capture</title>
+        <style>
+            #video { border: 1px solid black; width: 100%; max-width: 500px; }
+            #canvas { display: none; }
+            #photo { border: 1px solid black; width: 100%; max-width: 500px; }
+            button { margin: 10px 0; padding: 10px; }
+        </style>
+    </head>
+    <body>
+        <h1>Camera Capture</h1>
+        <video id="video" autoplay></video>
+        <button id="capture">Take Photo</button>
+        <canvas id="canvas"></canvas>
+        <img id="photo" alt="Captured Photo">
+
+        <script>
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const photo = document.getElementById('photo');
+            const captureBtn = document.getElementById('capture');
+
+            // Access the camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Error accessing camera:", err);
+                });
+
+            // Capture photo
+            captureBtn.addEventListener('click', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Convert to JPEG and display
+                photo.src = canvas.toDataURL('image/jpeg');
+
+                // Upload to server
+                uploadPhoto(canvas.toDataURL('image/jpeg'));
+            });
+
+            // Upload photo to backend
+            function uploadPhoto(dataUrl) {
+                const blob = dataURLtoBlob(dataUrl);
+                const formData = new FormData();
+                formData.append('photo', blob, 'photo.jpg');
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())
+                .then(result => {
+                    console.log('Upload success:', result);
+                })
+                .catch(err => {
+                    console.error('Upload error:', err);
+                });
+            }
+
+            // Helper: Convert data URL to Blob
+            function dataURLtoBlob(dataUrl) {
+                const parts = dataUrl.split(';base64,');
+                const contentType = parts[0].split(':')[1];
+                const raw = window.atob(parts[1]);
+                const rawLength = raw.length;
+                const uInt8Array = new Uint8Array(rawLength);
+
+                for (let i = 0; i < rawLength; ++i) {
+                    uInt8Array[i] = raw.charCodeAt(i);
+                }
+
+                return new Blob([uInt8Array], { type: contentType });
+            }
+        </script>
+    </body>
+</html>

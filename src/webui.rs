@@ -2,9 +2,10 @@ use crate::{CODES_FOLDER, DB_FILE, database};
 use askama::Template;
 use axum::{
     Router,
-    extract::{Path, State},
+    extract::{Multipart, Path, State},
+    http::StatusCode,
     response::Html,
-    routing::get,
+    routing::{get, post},
 };
 use tower_http::services::ServeDir;
 
@@ -17,6 +18,8 @@ pub async fn run() {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/greet/{name}", get(greet))
         .route("/list", get(main_page))
+        .route("/camera", get(camera_page))
+        .route("/upload", post(upload_photo))
         .nest_service("/codes/", serve_dir)
         .with_state(db_data);
 
@@ -36,8 +39,31 @@ async fn main_page(State(db_data): State<Vec<database::BoxData>>) -> Html<String
     Html(template.render().unwrap())
 }
 
+async fn camera_page() -> Html<String> {
+    let template = CameraTemplate;
+    Html(template.render().unwrap())
+}
+
+async fn upload_photo(mut multipart: Multipart) -> Result<String, (StatusCode, String)> {
+    while let Some(field) = multipart.next_field().await.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))? {
+        let name = field.name().ok_or((StatusCode::BAD_REQUEST, "Field name missing".to_string()))?.to_string();
+        let data = field.bytes().await.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+
+        if name == "photo" {
+            // Save the photo (e.g., to disk or database)
+            std::fs::write("photo.jpg", &data).map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+            return Ok("Photo uploaded successfully!".to_string());
+        }
+    }
+    Err((StatusCode::BAD_REQUEST, "No photo found".to_string()))
+}
+
 #[derive(Template)]
 #[template(path = "list_boxes.html")]
 pub struct MainPage {
     pub data: Vec<database::BoxData>,
 }
+
+#[derive(Template)]
+#[template(path = "basic_camera.html")]
+struct CameraTemplate;

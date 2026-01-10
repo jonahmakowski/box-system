@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 askama = "0.15.1"
-axum = "0.8.8"
+axum = { version = "0.8.8", features = ["multipart"] }
 colored = "3.0.0"
 hyper = "1.8.1"
 image = "0.25.9"
