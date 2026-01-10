@@ -1,10 +1,9 @@
-use uuid::Uuid;
-use serde::{Serialize, Deserialize};
+use super::{CODES_FOLDER, qrcode_gen};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{Write, Read};
+use std::io::{Read, Write};
 use std::path::Path;
-use super::{qrcode_gen, CODES_FOLDER};
-
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BoxData {
@@ -16,7 +15,7 @@ impl BoxData {
     pub fn new(box_contents: String) -> Self {
         let uuid = Uuid::new_v4().to_string();
 
-        let built = Self {uuid, box_contents};
+        let built = Self { uuid, box_contents };
 
         let qr_code = qrcode_gen::gen_qr_code_for_box(&built);
         qrcode_gen::to_pdf(qr_code, &format!("{}{}.pdf", CODES_FOLDER, built.uuid));

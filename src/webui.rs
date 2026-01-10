@@ -1,4 +1,4 @@
-use axum::{extract::Path, routing::get, Router};
+use axum::{Router, extract::Path, routing::get};
 use tower_http::services::ServeDir;
 
 pub async fn run() {
@@ -9,9 +9,7 @@ pub async fn run() {
         .route("/greet/{name}", get(greet))
         .nest_service("/codes/", serve_dir);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
     println!("Running Server!");
     axum::serve(listener, app).await.unwrap();
