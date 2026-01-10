@@ -45,13 +45,24 @@ async fn camera_page() -> Html<String> {
 }
 
 async fn upload_photo(mut multipart: Multipart) -> Result<String, (StatusCode, String)> {
-    while let Some(field) = multipart.next_field().await.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))? {
-        let name = field.name().ok_or((StatusCode::BAD_REQUEST, "Field name missing".to_string()))?.to_string();
-        let data = field.bytes().await.map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?
+    {
+        let name = field
+            .name()
+            .ok_or((StatusCode::BAD_REQUEST, "Field name missing".to_string()))?
+            .to_string();
+        let data = field
+            .bytes()
+            .await
+            .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
 
         if name == "photo" {
             // Save the photo (e.g., to disk or database)
-            std::fs::write("photo.jpg", &data).map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+            std::fs::write("photo.jpg", &data)
+                .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
             return Ok("Photo uploaded successfully!".to_string());
         }
     }
