@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>List of Boxes</title>
+    </head>
+
+    <body>
+        <h1>List of Boxes</h1>
+        <p>All the boxes, with links to their qr codes.</p>
+        <ul>
+            {% for b in data %}
+                <li><a href="/codes/{{ b.uuid() }}.pdf" target="_blank">{{ b.box_contents }}</a></li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

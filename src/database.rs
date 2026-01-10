@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::path::Path;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BoxData {
     uuid: String,
     pub box_contents: String,
