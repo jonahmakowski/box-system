@@ -2,12 +2,13 @@ use crate::{CODES_FOLDER, DB_FILE, database};
 use askama::Template;
 use axum::{
     Router,
-    extract::{Multipart, Path, State},
+    extract::{Path, State, Json},
     http::StatusCode,
     response::Html,
     routing::{get, post},
 };
 use tower_http::services::ServeDir;
+use serde::Deserialize;
 
 pub async fn run() {
     let db_data = database::read_database(DB_FILE).expect("Something went wrong");
@@ -19,7 +20,7 @@ pub async fn run() {
         .route("/greet/{name}", get(greet))
         .route("/list", get(main_page))
         .route("/camera", get(camera_page))
-        .route("/upload", post(upload_photo))
+        .route("/submit-qr", post(submit_qr_code))
         .nest_service("/codes/", serve_dir)
         .with_state(db_data);
 
@@ -44,30 +45,12 @@ async fn camera_page() -> Html<String> {
     Html(template.render().unwrap())
 }
 
-async fn upload_photo(mut multipart: Multipart) -> Result<String, (StatusCode, String)> {
-    while let Some(field) = multipart
-        .next_field()
-        .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?
-    {
-        let name = field
-            .name()
-            .ok_or((StatusCode::BAD_REQUEST, "Field name missing".to_string()))?
-            .to_string();
-        let data = field
-            .bytes()
-            .await
-            .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
-
-        if name == "photo" {
-            // Save the photo (e.g., to disk or database)
-            std::fs::write("photo.jpg", &data)
-                .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
-            return Ok("Photo uploaded successfully!".to_string());
-        }
-    }
-    Err((StatusCode::BAD_REQUEST, "No photo found".to_string()))
+async fn submit_qr_code(Json(payload): Json<QRCodeData>) -> Result<String, (StatusCode, String)> {
+    println!("Received QR code content: {}", payload.qr_content);
+    // Process the QR code content (e.g., save to database, validate, etc.)
+    Ok(format!("Successfully received QR code: {}", payload.qr_content))
 }
+
 
 #[derive(Template)]
 #[template(path = "list_boxes.html")]
@@ -75,6 +58,11 @@ pub struct MainPage {
     pub data: Vec<database::BoxData>,
 }
 
+#[derive(Deserialize)]
+struct QRCodeData {
+    qr_content: String,
+}
+
 #[derive(Template)]
-#[template(path = "basic_camera.html")]
+#[template(path = "qr_camera.html")]
 struct CameraTemplate;
