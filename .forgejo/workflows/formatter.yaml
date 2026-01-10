@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run Formatter
         uses: https://git.jonahmakowski.ca/custom_actions/format-rust@1.0.0
