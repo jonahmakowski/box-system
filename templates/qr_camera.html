@@ -51,7 +51,6 @@
                 codeReader.decodeFromImage(image)
                     .then(result => {
                         resultDiv.textContent = result.text;
-                        sendQRCodeToServer(result.text);
                     })
                     .catch(err => {
                         resultDiv.textContent = "No QR code found or error: " + err;
@@ -59,24 +58,6 @@
             };
             image.src = canvas.toDataURL('image/jpeg');
         });
-
-        // Send QR code content to the server
-        function sendQRCodeToServer(qrContent) {
-            fetch('/submit-qr', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ qr_content: qrContent }),
-            })
-            .then(response => response.text())
-            .then(result => {
-                console.log('Server response:', result);
-            })
-            .catch(err => {
-                console.error('Error sending QR code:', err);
-            });
-        }
     </script>
 </body>
 </html>
