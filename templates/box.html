@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Box {{ b.box_contents }}</title>
+    </head>
+
+    <body>
+        <form action="/" method="get" style="display: inline">
+            <button type="submit">Return Home</button>
+        </form>
+        <br />
+        <h1>{{ b.box_contents }}</h1>
+        <object
+            width="500"
+            height="500"
+            type="application/pdf"
+            data="/codes/{{ b.uuid() }}.pdf?#zoom=450&scrollbar=0&toolbar=0&navpanes=0"
+        >
+            <p>
+                The pdf image could not be displayed. Click here to see the pdf.
+            </p>
+            <a href="/codes/{{ b.uuid() }}.pdf">Download PDF</a>
+        </object>
+        <br />
+        <button id="print_external">Print QR code</button>
+
+        <script>
+            document
+                .getElementById("print_external")
+                ?.addEventListener("click", () => {
+                    // Try printing the embedded object if available
+                    const obj = document.querySelector(
+                        "object[type='application/pdf']",
+                    );
+                    if (obj && obj.contentDocument) {
+                        obj.contentDocument.defaultView?.print();
+                        return;
+                    }
+                    // Fallback: open a hidden iframe and print
+                    const pdfUrl = "/codes/{{ b.uuid() }}.pdf";
+                    const iframe = document.createElement("iframe");
+                    iframe.style.display = "none";
+                    iframe.src = pdfUrl;
+                    document.body.appendChild(iframe);
+                    iframe.onload = () => {
+                        iframe.contentWindow?.print();
+                        setTimeout(
+                            () => document.body.removeChild(iframe),
+                            1000,
+                        );
+                    };
+                });
+        </script>
+    </body>
+</html>

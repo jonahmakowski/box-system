@@ -8,7 +8,9 @@
         <p>All the boxes, with links to their qr codes.</p>
         <ul>
             {% for b in data %}
-                <li><a href="/codes/{{ b.uuid() }}.pdf" target="_blank">{{ b.box_contents }}</a></li>
+            <li>
+                <a href="/box/{{ b.uuid() }}">{{ b.box_contents }}</a>
+            </li>
             {% endfor %}
         </ul>
     </body>

@@ -14,10 +14,10 @@ pub async fn run() {
     let serve_dir = ServeDir::new(CODES_FOLDER);
 
     let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
+        .route("/", get(main_page))
         .route("/greet/{name}", get(greet))
-        .route("/list", get(main_page))
         .route("/camera", get(camera_page))
+        .route("/box/{uuid}", get(box_page))
         .nest_service("/codes/", serve_dir)
         .with_state(db_data);
 
@@ -26,6 +26,13 @@ pub async fn run() {
     println!("Running Server on http://127.0.0.1:3000");
 
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn box_page(Path(uuid): Path<String>) -> Html<String> {
+    let mut db_data = database::read_database(DB_FILE).expect("Something went wrong");
+    let b = database::find_by_uuid(&mut db_data, &uuid).unwrap().clone();
+    let template = BoxPage { b };
+    Html(template.render().unwrap())
 }
 
 async fn greet(Path(name): Path<String>) -> String {
@@ -46,6 +53,12 @@ async fn camera_page() -> Html<String> {
 #[template(path = "list_boxes.html")]
 pub struct MainPage {
     pub data: Vec<database::BoxData>,
+}
+
+#[derive(Template)]
+#[template(path = "box.html")]
+pub struct BoxPage {
+    pub b: database::BoxData,
 }
 
 #[derive(Template)]
